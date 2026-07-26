@@ -5,18 +5,18 @@ class SimpleTokenizer:
     """
     A word-level tokenizer with special tokens.
     """
-
+    
     def __init__(self):
         self.word_to_id: Dict[str, int] = {}
         self.id_to_word: Dict[int, str] = {}
         self.vocab_size = 0
-
+        
         # Special tokens
         self.pad_token = "<PAD>"
         self.unk_token = "<UNK>"
         self.bos_token = "<BOS>"
         self.eos_token = "<EOS>"
-
+    
     def build_vocab(self, texts: List[str]) -> None:
         """
         Build vocabulary from a list of texts.
@@ -30,28 +30,24 @@ class SimpleTokenizer:
             self.eos_token: 3
         }
 
-        self.id_to_word = {
-            0: self.pad_token,
-            1: self.unk_token,
-            2: self.bos_token,
-            3: self.eos_token
-        }
-
         # Collect unique words
         words = set()
         for text in texts:
-            words.update(text.lower().split())
+            for word in text.lower().split():
+                words.add(word)
 
         # Add words in sorted order
         idx = 4
         for word in sorted(words):
             self.word_to_id[word] = idx
-            self.id_to_word[idx] = word
             idx += 1
 
-        # Set vocabulary size
-        self.vocab_size = idx
+        # Reverse mapping
+        self.id_to_word = {idx: word for word, idx in self.word_to_id.items()}
 
+        # Vocabulary size
+        self.vocab_size = len(self.word_to_id)
+    
     def encode(self, text: str) -> List[int]:
         """
         Convert text to list of token IDs.
@@ -61,12 +57,12 @@ class SimpleTokenizer:
             self.word_to_id.get(word, self.word_to_id[self.unk_token])
             for word in text.lower().split()
         ]
-
+    
     def decode(self, ids: List[int]) -> str:
         """
         Convert list of token IDs back to text.
         """
         return " ".join(
-            self.id_to_word.get(token_id, self.unk_token)
-            for token_id in ids
+            self.id_to_word.get(idx, self.unk_token)
+            for idx in ids
         )
